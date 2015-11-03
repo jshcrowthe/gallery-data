@@ -1,0 +1,34 @@
+{
+  "name": "gallery-data",
+  "version": "1.0.3",
+  "authors": [
+    "Anonymous <anonymous@example.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "seed"
+  ],
+  "main": "gallery-data.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0",
+    "fs-client": "fs-webcomponents/fs-client#~0.1.9",
+    "iron-ajax": "PolymerElements/iron-ajax#~1.0.8"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*",
+    "artifact-grid": "jshcrowthe/artifact-grid",
+    "gallery-albums": "jshcrowthe/gallery-albums"
+  },
+  "resolutions": {
+    "polymer": "~1.2.0"
+  }
+}

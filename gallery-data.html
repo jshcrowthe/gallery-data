@@ -1,0 +1,236 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <gallery-data></gallery-data>
+
+@group Seed Elements
+@element gallery-data
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="gallery-data">
+  <template>
+    <iron-ajax auto headers='[[_headers]]'
+           url="https://fs-memories-ami-[[env]].herokuapp.com/artifacts/[[cisId]]"
+           handle-as="json"
+           on-response="_handleArtifacts"></iron-ajax>    
+    <iron-ajax auto headers='[[_headers]]'
+           url="[[_albumsURL(env, cisId)]]"
+           handle-as="json"
+           on-response="_handleAlbums"></iron-ajax>
+   <iron-ajax id='indvAlbum' auto headers='[[_headers]]'
+           handle-as="json"
+           on-response="_handleIndvAlbum"></iron-ajax>   
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  function readCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+      var c = ca[i];
+      while (c.charAt(0)==' ') c = c.substring(1,c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+  }
+
+  var artifacts = [];
+
+  Polymer({
+
+    is: 'gallery-data',
+
+    properties: {
+      _headers: {
+        type: Object,
+        value: function() {
+          return {
+            'Authorization': readCookie('fssessionid') ? 'Bearer ' + readCookie('fssessionid') : '',
+            'Accept': 'application/json'
+          }
+        }
+      },
+
+      // USER INPUTS
+
+      /**
+       * This is the current env. This will customize the requests to the AMI service
+       * @type {String}
+       */
+      env: {
+        type: String,
+        value: 'beta'
+      },
+
+      /**
+       * The cisID of the current user
+       * @type {String}
+       */
+      cisId: {
+        type: String,
+        value: ''
+      },
+
+      // EXPORTED PROPS
+      
+      /**
+       * A list of artifacts based on the current state
+       * @type {Object}
+       */
+      artifacts: {
+        type: Array,
+        readOnly: true,
+        notify: true,
+        value: function() { return []; }
+      },
+
+      /**
+       * The total artifact count
+       * @type {Object}
+       */
+      totalArtifacts: {
+        type: Number,
+        readOnly: true,
+        notify: true,
+        value: 0
+      },
+
+      /**
+       * A list of albums for a given user
+       * @type {Object}
+       */
+      albums: {
+        type: Array,
+        readOnly: true,
+        notify: true,
+        value: function() { return []; }
+      },
+
+      /**
+       * An album object for a given album
+       * @type {Object}
+       */
+      album: {
+        type: Object,
+        readOnly: true,
+        notify: true,
+        value: function() { return {}; }
+      },
+
+      // EXPORTED FUNCTIONS
+      
+      /**
+       * A function to add an artifact to the current state
+       * @type {Object}
+       */
+      addArtifact: {
+        type: Function,
+        readOnly: true,
+        notify: true,
+        value: function() {
+          return function(val) {
+            // Unshift value to master artifacts list
+            artifacts.unshift(val);
+
+            // Unshift value to displayed artifacts list
+            this.unshift('artifacts', val);
+          }.bind(this);
+        }
+      },
+
+      /**
+       * A function to delete an artifact from the current state
+       * (artifacts OR albums)
+       * @type {Object}
+       */
+      deleteArtifact: {
+        type: Function,
+        readOnly, true,
+        value: function() {
+          return function(id) {
+            
+          }.bind(this);
+        }
+      }
+    },
+
+    ready: function() {
+      // Set album view on `gallery-view-album`
+      document.addEventListener('gallery-view-album', function(e) {
+        // Set Album Loading state
+        this._setAlbum({});
+
+        // Bail if no albumId
+        if (!e || !e.detail || !e.detail.albumId) return;
+        var albumId = e.detail.albumId;
+
+        // Build request URL
+        var url = (function(env, albumId) {
+          return 'https://fs-memories-ami-' + env + '.herokuapp.com/albums/' + albumId;
+        })(this.env, albumId);
+
+        // Configure <iron-ajax> tag and make req
+        this.$.indvAlbum.url = url;
+        this.$.indvAlbum.generateRequest();
+      }.bind(this));
+
+      // Clear album view and set memories view on `gallery-view-memories`
+      document.addEventListener('gallery-view-memories', function(e) {
+        // Clear Album State
+        this._setAlbum(null);
+
+        // Reset to original album state
+        this._setArtifacts(artifacts);
+      }.bind(this));
+
+    },
+    _albumsURL: function(env, cisId) {
+      if (env !== 'prod') return 'https://' + env + '.familysearch.org/artifactmanager/patrons/' + cisId + '/albums';
+      return 'https://familysearch.org/artifactmanager/patrons/' + cisId +'/albums';
+    },
+    _handleArtifacts: function(event, request) {
+      if (!request || !request.response) return;
+      var res = request.response;
+
+      this._setTotalArtifacts(res.count);
+      if (Array.isArray(res.artifacts)) {
+        artifacts = res.artifacts;
+        if (!this.album) this._setArtifacts(artifacts);
+      }
+    },
+
+    _handleAlbums: function(event, request) {
+      if (!request || !request.response) return;
+      var res = request.response;
+
+      if (Array.isArray(res.album)) this._setAlbums((res.album));
+    },
+
+    _handleIndvAlbum: function(event, request) {
+      if (!request || !request.response) return;
+      var res = request.response;
+
+      if (Array.isArray(res.artifacts)) this._setArtifacts((res.artifacts));
+      if (res.album) this._setAlbum(res.album);
+    },
+
+  });
+})();
+
+</script>
