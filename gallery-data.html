@@ -59,24 +59,6 @@ Example:
     properties: {
       // USER INPUTS
 
-      /**
-       * This is the current env. This will customize the requests to the AMI service
-       * @type {String}
-       */
-      env: {
-        type: String,
-        value: 'beta'
-      },
-
-      /**
-       * The cisID of the current user
-       * @type {String}
-       */
-      cisId: {
-        type: String,
-        value: ''
-      },
-
       // EXPORTED PROPS
       
       /**
@@ -122,78 +104,8 @@ Example:
         notify: true,
         value: function() { return {}; }
       },
-
-      // EXPORTED FUNCTIONS
-      
-      /**
-       * A function to add an artifact to the current state
-       * @type {Object}
-       */
-      addArtifact: {
-        type: Function,
-        readOnly: true,
-        notify: true,
-        value: function() {
-          return function(val) {
-            // Unshift value to master artifacts list
-            artifacts.unshift(val);
-
-            // Unshift value to displayed artifacts list
-            this.unshift('artifacts', val);
-          }.bind(this);
-        }
-      },
-
-      /**
-       * A function to delete an artifact from the current state
-       * (artifacts OR albums)
-       * @type {Object}
-       */
-      deleteArtifact: {
-        type: Function,
-        readOnly: true,
-        value: function() {
-          return function(id) {
-            
-          }.bind(this);
-        }
-      }
     },
-
-    ready: function() {
-      // Set album view on `gallery-view-album`
-      document.addEventListener('gallery-view-album', function(e) {
-        // Set Album Loading state
-        this._setAlbum({});
-
-        // Bail if no albumId
-        if (!e || !e.detail || !e.detail.albumId) return;
-        var albumId = e.detail.albumId;
-
-        // Build request URL
-        var url = (function(env, albumId) {
-          return 'https://fs-memories-ami-' + env + '.herokuapp.com/albums/' + albumId;
-        })(this.env, albumId);
-
-        // Configure <iron-ajax> tag and make req
-        this.$.indvAlbum.url = url;
-        this.$.indvAlbum.generateRequest();
-      }.bind(this));
-
-      // Clear album view and set memories view on `gallery-view-memories`
-      document.addEventListener('gallery-view-memories', function(e) {
-        // Clear Album State
-        this._setAlbum(null);
-
-        // Reset to original album state
-        this._setArtifacts(artifacts);
-      }.bind(this));
-
-    },
-    _albumsURL: function(env, cisId) {
-      if (env !== 'prod') return 'https://' + env + '.familysearch.org/artifactmanager/patrons/' + cisId + '/albums';
-      return 'https://familysearch.org/artifactmanager/patrons/' + cisId +'/albums';
-    },
+    
     _handleArtifacts: function(event, request) {
       if (!request || !request.response) return;
       var res = request.response;
