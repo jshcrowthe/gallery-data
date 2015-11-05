@@ -7,8 +7,8 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
 <!--
 An element providing a solution to no problem in particular.
 
@@ -24,11 +24,11 @@ Example:
 <dom-module id="gallery-data">
   <template>
     <iron-ajax auto headers='[[_headers]]'
-           url="https://fs-memories-ami-[[env]].herokuapp.com/artifacts/[[cisId]]"
+           url="https://my-dummy-api.herokuapp.com/artifacts"
            handle-as="json"
            on-response="_handleArtifacts"></iron-ajax>    
     <iron-ajax auto headers='[[_headers]]'
-           url="[[_albumsURL(env, cisId)]]"
+           url="https://my-dummy-api.herokuapp.com/albums"
            handle-as="json"
            on-response="_handleAlbums"></iron-ajax>
    <iron-ajax id='indvAlbum' auto headers='[[_headers]]'

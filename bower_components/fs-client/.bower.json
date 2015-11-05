@@ -1,0 +1,36 @@
+{
+  "name": "fs-client",
+  "version": "0.1.9",
+  "description": "Web component to access the FamilySearch APIs",
+  "homepage": "https://github.com/york-solutions/fs-client",
+  "main": "fs-client.html",
+  "authors": [
+    "Justin York"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "/.*"
+  ],
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "familysearch"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  },
+  "_release": "0.1.9",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.1.9",
+    "commit": "5aea8771c6b34f5c472d2c045ca111d140b5d182"
+  },
+  "_source": "git://github.com/fs-webcomponents/fs-client.git",
+  "_target": "~0.1.9",
+  "_originalSource": "fs-webcomponents/fs-client"
+}

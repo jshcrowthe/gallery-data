@@ -1,0 +1,88 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../layout/layout.html">
+<link rel="import" href="../grid-item/grid-item.html">
+<link rel="import" href="../iron-selector/iron-selector.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <artifact-grid></artifact-grid>
+
+@group Seed Elements
+@element artifact-grid
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="artifact-grid">
+<link rel="import" type="css" href="styles.css">
+  <template>
+    <div class="layout horizontal wrap">
+      <!-- On Select And Deselect Events Manually Update Styles -->
+      <iron-selector id='selector' selected-items='{{_selectedNodes}}' attr-for-selected='data-uid' multi on-iron-select='_updateStyles' on-iron-deselect='_updateStyles'>
+        <template is='dom-repeat' items='{{artifacts}}' as='artifact'>
+          <div class="item" data-uid$='[[artifact.id]]'>
+            <grid-item data='[[artifact]]'></grid-item>
+            <i class="check-icon"></i>
+          </div>
+        </template>
+      </iron-selector>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  var fetchGridItemChild = function(nodes) {
+    return nodes.map(function(node) {
+      return node.querySelector('grid-item');
+    });
+  };
+
+  Polymer({
+
+    is: 'artifact-grid',
+    properties: {
+      _selectedNodes: {
+        type: Array
+      },
+      artifacts: {
+        type: Array,
+        value: function() { return []; },
+        observer: 'deselectAll'
+      },
+      selectedItems: {
+        type: Array,
+        readOnly: true,
+        computed: '_computeItemsFromNodes(_selectedNodes)'
+      }
+    },
+    _computeItemsFromNodes: fetchGridItemChild,
+    _updateStyles: function() {
+      // This is a built in Polymer Function to force CSS property/mixin updating within this component
+      this.updateStyles();
+    },
+    deselectAll: function() {
+      var el = this.$.selector;
+      if (!el || !Array.isArray(el.selectedValues)) return;
+
+      // Turn off select for all selected values (when called
+      // with multi on the `select` function toggles the select
+      // value)
+      while(el.selectedValues.length) {
+        el.select(el.selectedValues[0]);
+      }
+    }
+  });
+})();
+
+</script>

@@ -1,0 +1,44 @@
+{
+  "name": "grid-item",
+  "authors": [
+    "Josh Crowther <jshcrowthe@gmail.com>"
+  ],
+  "description": "A type extension element for button from the FamilySearch styleguide",
+  "main": "grid-item.html",
+  "moduleType": [],
+  "keywords": [
+    "button",
+    "styleguide"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jshcrowthe/grid-item",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "/demo"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~1.2.0",
+    "fs-card": "jshcrowthe/fs-card",
+    "layout": "Polymer/layout"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#~1.0.6",
+    "iron-ajax": "PolymerElements/iron-ajax#~1.0.6"
+  },
+  "resolutions": {
+    "polymer": "^1.2.0"
+  },
+  "_release": "d91074a291",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "d91074a291651b830393b589dd745b9c5c331bf3"
+  },
+  "_source": "git://github.com/jshcrowthe/grid-item.git",
+  "_target": "*",
+  "_originalSource": "jshcrowthe/grid-item"
+}

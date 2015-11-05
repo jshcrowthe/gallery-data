@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
     <title>gallery-data Demo</title>
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="./elements.html" async>
   </head>
   <body>
@@ -23,17 +23,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template is='dom-bind' id='app'>
       <div>
         <p>Sample <code>&lt;gallery-data&gt;</code> interactions:</p>
-        <button on-tap='addItem'>Add Item</button>
       </div>
       <gallery-data id='service' cis-id='cis.user.MMM3-Z11V' artifacts='{{artifacts}}' total-artifacts='{{totalArtifacts}}' albums='{{albums}}'></gallery-data>
       <gallery-albums albums='[[albums]]' count='[[totalArtifacts]]'></gallery-albums>
       <artifact-grid artifacts='[[artifacts]]'></artifact-grid>
     </template>
-    <script>
-    var el = document.querySelector('#app');
-    el.addItem = function() {
-      el.$.service.addArtifact({"href":"./images/9012782","category":"IMAGE","url":"https://beta.familysearch.org/patron/v2/TH-903-59188-2-22/dist.jpg?ctx=ArtCtxPublic","thumbUrl":"https://beta.familysearch.org/patron/v2/TH-903-59188-2-22/thumb200.jpg?ctx=ArtCtxPublic","title":"","description":"","id":9012782,"uploadDatetime":1446526635000,"datesPlaces":null,"deepZoomLiteUrl":"https://beta.familysearch.org/dzpatron/v1/TH-903-59188-2-22/scale?width=800&ctx=ArtCtxPublic","screeningState":"UNSCREENED","originalFilename":"Why-are-frogs-so-happy---meme.jpg","photoTagCount":0,"inViewport":true,"selected":true});
-    };
-    </script>
   </body>
 </html>

@@ -1,0 +1,39 @@
+{
+  "name": "gallery-albums",
+  "authors": [
+    "Anonymous <anonymous@example.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "polymer",
+    "seed"
+  ],
+  "main": "gallery-albums.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "ignore": [
+    "/.*",
+    "/test/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0",
+    "layout": "Polymer/layout"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  },
+  "resolutions": {
+    "polymer": "^1.2.0"
+  },
+  "_release": "be8935a12b",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "be8935a12bd33c79013d379eaf4b8518fd0d61bd"
+  },
+  "_source": "git://github.com/jshcrowthe/gallery-albums.git",
+  "_target": "*",
+  "_originalSource": "jshcrowthe/gallery-albums"
+}
