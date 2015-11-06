@@ -21,22 +21,6 @@ Example:
 @demo demo/index.html
 @hero hero.svg
 -->
-<dom-module id="gallery-data">
-  <template>
-    <iron-ajax auto headers='[[_headers]]'
-           url="https://fs-memories-ami-[[env]].herokuapp.com/artifacts/[[cisId]]"
-           handle-as="json"
-           on-response="_handleArtifacts"></iron-ajax>    
-    <iron-ajax auto headers='[[_headers]]'
-           url="[[_albumsURL(env, cisId)]]"
-           handle-as="json"
-           on-response="_handleAlbums"></iron-ajax>
-   <iron-ajax id='indvAlbum' auto headers='[[_headers]]'
-           handle-as="json"
-           on-response="_handleIndvAlbum"></iron-ajax>   
-  </template>
-</dom-module>
-
 <script>
 (function() {
   function readCookie(name) {
@@ -57,16 +41,6 @@ Example:
     is: 'gallery-data',
 
     properties: {
-      _headers: {
-        type: Object,
-        value: function() {
-          return {
-            'Authorization': readCookie('fssessionid') ? 'Bearer ' + readCookie('fssessionid') : '',
-            'Accept': 'application/json'
-          }
-        }
-      },
-
       // USER INPUTS
 
       /**
@@ -129,8 +103,7 @@ Example:
       album: {
         type: Object,
         readOnly: true,
-        notify: true,
-        value: function() { return {}; }
+        notify: true
       },
 
       // EXPORTED FUNCTIONS
@@ -170,7 +143,50 @@ Example:
       }
     },
 
+    get requestHeaders() {
+      return {
+        'Authorization': readCookie('fssessionid') ? 'Bearer ' + readCookie('fssessionid') : '',
+        'Accept': 'application/json'
+      }
+    },
+
     ready: function() {
+      // Artifacts Request
+      var artifactsReq = document.createElement('iron-ajax');
+      artifactsReq.url = 'https://fs-memories-ami-' + this.env + '.herokuapp.com/artifacts/' + this.cisId;
+      artifactsReq.handleAs = 'json';
+      artifactsReq.headers = this.requestHeaders;
+      var artifactsHandler = function(event) {
+        if (!event || !event.detail || !event.detail.response) return;
+        var res = event.detail.response;
+
+        this._setTotalArtifacts(res.count);
+        if (Array.isArray(res.artifacts)) {
+          artifacts = res.artifacts;
+          if (!this.album) this._setArtifacts(artifacts);
+        }
+        artifactsReq = null;
+      }.bind(this);
+      artifactsReq.addEventListener('response', artifactsHandler); 
+      artifactsReq.generateRequest();
+
+      // Albums Request
+      var albumsReq = document.createElement('iron-ajax');
+      albumsReq.url = (this.env === 'prod' ? 'https://familysearch.org/artifactmanager/patrons/' + this.cisId +'/albums' : 
+                          'https://' + this.env + '.familysearch.org/artifactmanager/patrons/' + this.cisId + '/albums');
+      albumsReq.handleAs = 'json';
+      albumsReq.headers = this.requestHeaders;
+      var albumsHandler = function(event) {
+        if (!event || !event.detail || !event.detail.response) return;
+        var res = event.detail.response;
+
+        if (Array.isArray(res.album)) this._setAlbums((res.album));
+        albumsReq = null;
+      }.bind(this);
+      albumsReq.addEventListener('response', albumsHandler);
+      albumsReq.generateRequest();
+    },
+    attached: function() {
       // Set album view on `gallery-view-album`
       document.addEventListener('gallery-view-album', function(e) {
         // Set Album Loading state
@@ -186,8 +202,19 @@ Example:
         })(this.env, albumId);
 
         // Configure <iron-ajax> tag and make req
-        this.$.indvAlbum.url = url;
-        this.$.indvAlbum.generateRequest();
+        var albumReq = document.createElement('iron-ajax');
+        var handleAlbumReq = function(event, request) {
+          this._handleIndvAlbum(event, request);
+          albumReq = null;
+        }.bind(this);
+        albumReq.addEventListener('response', handleAlbumReq);
+        albumReq.url = url;
+        albumReq.handleAs = 'json';
+        albumReq.headers = this.requestHeaders;
+        albumReq.generateRequest();
+
+        // Set artifacts to null array
+        this._setArtifacts([]);
       }.bind(this));
 
       // Clear album view and set memories view on `gallery-view-memories`
@@ -200,31 +227,9 @@ Example:
       }.bind(this));
 
     },
-    _albumsURL: function(env, cisId) {
-      if (env !== 'prod') return 'https://' + env + '.familysearch.org/artifactmanager/patrons/' + cisId + '/albums';
-      return 'https://familysearch.org/artifactmanager/patrons/' + cisId +'/albums';
-    },
-    _handleArtifacts: function(event, request) {
-      if (!request || !request.response) return;
-      var res = request.response;
-
-      this._setTotalArtifacts(res.count);
-      if (Array.isArray(res.artifacts)) {
-        artifacts = res.artifacts;
-        if (!this.album) this._setArtifacts(artifacts);
-      }
-    },
-
-    _handleAlbums: function(event, request) {
-      if (!request || !request.response) return;
-      var res = request.response;
-
-      if (Array.isArray(res.album)) this._setAlbums((res.album));
-    },
-
-    _handleIndvAlbum: function(event, request) {
-      if (!request || !request.response) return;
-      var res = request.response;
+    _handleIndvAlbum: function(event) {
+      if (!event || !event.detail || !event.detail.response) return;
+      var res = event.detail.response;
 
       if (Array.isArray(res.artifacts)) this._setArtifacts((res.artifacts));
       if (res.album) this._setAlbum(res.album);
