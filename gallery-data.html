@@ -23,6 +23,60 @@ Example:
 -->
 <script>
 (function() {
+  // Bring in cached Filter if exists on first null filter
+  var filterType = sessionStorage.getItem('gallery-filter-type') || 'all';
+  function photoFilter(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'image') return true;
+    return false;
+  }
+  function storiesFilter(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'story') return true;
+    return false;
+  }
+  function documentsFilter(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'document') return true;
+    return false;
+  }
+  function audioFilter(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'audio') return true;
+    return false;
+  }
+  function filter(type) {
+    return {
+      photos: photoFilter,
+      stories: storiesFilter,
+      documents: documentsFilter,
+      audio: audioFilter
+    }[type] || function() { return true; }
+  }
+
+  // Bring in cached sort if exists on first null sort
+  var sortType = sessionStorage.getItem('gallery-sort-type') || 'all';
+  function photoSort(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'image') return true;
+    return false;
+  }
+  function storiesSort(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'story') return true;
+    return false;
+  }
+  function documentsSort(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'document') return true;
+    return false;
+  }
+  function audioSort(artifact) {
+    if (artifact && artifact.category && artifact.category.toLowerCase() === 'audio') return true;
+    return false;
+  }
+  function sort(type) {
+    return {
+      photos: photoSort,
+      stories: storiesSort,
+      documents: documentsSort,
+      audio: audioSort
+    }[type] || function() { return true; }
+  }
+
   function readCookie(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
@@ -35,6 +89,8 @@ Example:
   }
 
   var artifacts = [];
+
+  var viewArtifacts = [];
 
   Polymer({
 
@@ -163,7 +219,10 @@ Example:
         this._setTotalArtifacts(res.count);
         if (Array.isArray(res.artifacts)) {
           artifacts = res.artifacts;
-          if (!this.album) this._setArtifacts(artifacts);
+          if (!this.album) {
+            viewArtifacts = artifacts
+            this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+          }
         }
         artifactsReq = null;
       }.bind(this);
@@ -188,50 +247,66 @@ Example:
     },
     attached: function() {
       // Set album view on `gallery-view-album`
-      document.addEventListener('gallery-view-album', function(e) {
-        // Set Album Loading state
-        this._setAlbum({});
-
-        // Bail if no albumId
-        if (!e || !e.detail || !e.detail.albumId) return;
-        var albumId = e.detail.albumId;
-
-        // Build request URL
-        var url = (function(env, albumId) {
-          return 'https://fs-memories-ami-' + env + '.herokuapp.com/albums/' + albumId;
-        })(this.env, albumId);
-
-        // Configure <iron-ajax> tag and make req
-        var albumReq = document.createElement('iron-ajax');
-        var handleAlbumReq = function(event, request) {
-          this._handleIndvAlbum(event, request);
-          albumReq = null;
-        }.bind(this);
-        albumReq.addEventListener('response', handleAlbumReq);
-        albumReq.url = url;
-        albumReq.handleAs = 'json';
-        albumReq.headers = this.requestHeaders;
-        albumReq.generateRequest();
-
-        // Set artifacts to null array
-        this._setArtifacts([]);
-      }.bind(this));
+      this.listen(document, 'gallery-view-album', '_viewAlbum');
 
       // Clear album view and set memories view on `gallery-view-memories`
-      document.addEventListener('gallery-view-memories', function(e) {
-        // Clear Album State
-        this._setAlbum(null);
+      this.listen(document, 'gallery-view-memories', '_viewMemories');
 
-        // Reset to original album state
-        this._setArtifacts(artifacts);
-      }.bind(this));
+      // Refilter Gallery Items
+      this.listen(document, 'gallery-filter-changed', '_viewFilteredArtifacts');
+    },
+    _viewAlbum: function(e) {
+      // Set Album Loading state
+      this._setAlbum({});
 
+      // Bail if no albumId
+      if (!e || !e.detail || !e.detail.albumId) return;
+      var albumId = e.detail.albumId;
+
+      // Build request URL
+      var url = (function(env, albumId) {
+        return 'https://fs-memories-ami-' + env + '.herokuapp.com/albums/' + albumId;
+      })(this.env, albumId);
+
+      // Configure <iron-ajax> tag and make req
+      var albumReq = document.createElement('iron-ajax');
+      var handleAlbumReq = function(event, request) {
+        this._handleIndvAlbum(event, request);
+        albumReq = null;
+      }.bind(this);
+      albumReq.addEventListener('response', handleAlbumReq);
+      albumReq.url = url;
+      albumReq.handleAs = 'json';
+      albumReq.headers = this.requestHeaders;
+      albumReq.generateRequest();
+
+      // Set artifacts to null array
+      viewArtifacts = [];
+      this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+    },
+    _viewMemories: function() {
+      // Clear Album State
+      this._setAlbum(null);
+
+      // Reset to original album state
+      viewArtifacts = artifacts
+      this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+    },
+
+    _viewFilteredArtifacts: function(e) {
+      if (!e || !e.detail || !e.detail.filter) return;
+      filterType = e.detail.filter;
+      this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+      
     },
     _handleIndvAlbum: function(event) {
       if (!event || !event.detail || !event.detail.response) return;
       var res = event.detail.response;
 
-      if (Array.isArray(res.artifacts)) this._setArtifacts((res.artifacts));
+      if (Array.isArray(res.artifacts)) {
+        viewArtifacts = res.artifacts;
+        this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+      }
       if (res.album) this._setAlbum(res.album);
     },
 
