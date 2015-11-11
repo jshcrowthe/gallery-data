@@ -29,11 +29,15 @@ Example:
      headers='[[_requestHeaders]]'
      handle-as="json"
      on-response="_artifactsHandler"></iron-ajax>
-   <iron-ajax auto
+  <iron-ajax auto
      url="[[_albumsUrl(env, cisId)]]"
      headers='[[_requestHeaders]]'
      handle-as="json"
      on-response="_albumsHandler"></iron-ajax>
+  <iron-ajax id='indvAlbum'
+     headers='[[_requestHeaders]]'
+     handle-as="json"
+     on-response="_handleIndvAlbum"></iron-ajax>
   </template>
 </dom-module>
 <script>
@@ -269,21 +273,14 @@ Example:
       var albumId = e.detail.albumId;
 
       // Build request URL
-      var url = (function(env, albumId) {
+      var req = this.$.indvAlbum;
+      if (!req) return;
+
+      req.url = (function(env, albumId) {
         return 'https://fs-memories-ami-' + env + '.herokuapp.com/albums/' + albumId;
       })(this.env, albumId);
 
-      // Configure <iron-ajax> tag and make req
-      var albumReq = document.createElement('iron-ajax');
-      var handleAlbumReq = function(event, request) {
-        this._handleIndvAlbum(event, request);
-        albumReq = null;
-      }.bind(this);
-      albumReq.addEventListener('response', handleAlbumReq);
-      albumReq.url = url;
-      albumReq.handleAs = 'json';
-      albumReq.headers = this.requestHeaders;
-      albumReq.generateRequest();
+      req.generateRequest();
 
       // Set artifacts to null array
       viewArtifacts = [];
