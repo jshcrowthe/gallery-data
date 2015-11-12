@@ -60,13 +60,24 @@ Example:
     if (artifact && artifact.category && artifact.category.toLowerCase() === 'audio') return true;
     return false;
   }
-  function filter(type) {
+  function categoryFilter(type) {
     return {
       photos: photoFilter,
       stories: storiesFilter,
       documents: documentsFilter,
       audio: audioFilter
     }[type] || function() { return true; }
+  }
+
+  var searchVal = null;
+  function searchFilter(val) {
+    return function(artifact) {
+      if (!val) return true;
+      val = val.toLowerCase();
+      return (artifact.originalFilename    && ~artifact.originalFilename.toLowerCase().indexOf(val))    ||
+             (artifact.title       && ~artifact.title.toLowerCase().indexOf(val))       ||
+             (artifact.description && ~artifact.description.toLowerCase().indexOf(val));
+    };
   }
 
   // Bring in cached sort if exists on first null sort
@@ -238,6 +249,7 @@ Example:
 
       // Refilter Gallery Items
       this.listen(document, 'gallery-filter-changed', '_viewFilteredArtifacts');
+      this.listen(document, 'gallery-top-menu-search-changed', '_viewFilteredArtifacts');
     },
     _albumsUrl: function(env, cisId) {
       return (env === 'prod' ? 'https://familysearch.org/artifactmanager/patrons/' + cisId +'/albums' : 
@@ -252,7 +264,7 @@ Example:
         artifacts = res.artifacts;
         if (!this.album) {
           viewArtifacts = artifacts
-          this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+          this._setArtifacts(viewArtifacts.filter(searchFilter(searchVal)).filter(categoryFilter(filterType)));
         }
       }
       artifactsReq = null;
@@ -284,7 +296,7 @@ Example:
 
       // Set artifacts to null array
       viewArtifacts = [];
-      this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+      this._setArtifacts(viewArtifacts.filter(searchFilter(searchVal)).filter(categoryFilter(filterType)));
     },
     _viewMemories: function() {
       // Clear Album State
@@ -292,14 +304,14 @@ Example:
 
       // Reset to original album state
       viewArtifacts = artifacts
-      this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+      this._setArtifacts(viewArtifacts.filter(searchFilter(searchVal)).filter(categoryFilter(filterType)));
     },
 
     _viewFilteredArtifacts: function(e) {
-      if (!e || !e.detail || !e.detail.filter) return;
-      filterType = e.detail.filter;
-      this._setArtifacts(viewArtifacts.filter(filter(filterType)));
-      
+      if (!e || !e.detail || (!e.detail.filter && !typeof e.detail.search === 'undefined')) return;
+      filterType = e.detail.filter ? e.detail.filter : filterType;
+      searchVal = (typeof e.detail.search !== 'undefined') ? e.detail.search : searchVal;
+      this._setArtifacts(viewArtifacts.filter(searchFilter(searchVal)).filter(categoryFilter(filterType)));
     },
     _handleIndvAlbum: function(event) {
       if (!event || !event.detail || !event.detail.response) return;
@@ -307,7 +319,7 @@ Example:
 
       if (Array.isArray(res.artifacts)) {
         viewArtifacts = res.artifacts;
-        this._setArtifacts(viewArtifacts.filter(filter(filterType)));
+        this._setArtifacts(viewArtifacts.filter(searchFilter(searchVal)).filter(categoryFilter(filterType)));
       }
       if (res.album) this._setAlbum(res.album);
     },
