@@ -28,6 +28,7 @@ Example:
      url="https://fs-memories-ami-[[env]].herokuapp.com/artifacts/[[cisId]]"
      headers='[[_requestHeaders]]'
      handle-as="json"
+     loading='{{loadingArtifacts}}'
      on-response="_artifactsHandler"></iron-ajax>
   <iron-ajax auto
      url="[[_albumsUrl(env, cisId)]]"
@@ -37,6 +38,7 @@ Example:
   <iron-ajax id='indvAlbum'
      headers='[[_requestHeaders]]'
      handle-as="json"
+     loading='{{loadingArtifacts}}'
      on-response="_handleIndvAlbum"></iron-ajax>
   </template>
 </dom-module>
@@ -203,41 +205,11 @@ Example:
         notify: true
       },
 
-      // EXPORTED FUNCTIONS
-      
-      /**
-       * A function to add an artifact to the current state
-       * @type {Object}
-       */
-      addArtifact: {
-        type: Function,
-        readOnly: true,
-        notify: true,
-        value: function() {
-          return function(val) {
-            // Unshift value to master artifacts list
-            artifacts.unshift(val);
-
-            // Unshift value to displayed artifacts list
-            this.unshift('artifacts', val);
-          }.bind(this);
-        }
+      loadingArtifacts: {
+        type: Boolean,
+        value: false,
+        notify: true
       },
-
-      /**
-       * A function to delete an artifact from the current state
-       * (artifacts OR albums)
-       * @type {Object}
-       */
-      deleteArtifact: {
-        type: Function,
-        readOnly: true,
-        value: function() {
-          return function(id) {
-            
-          }.bind(this);
-        }
-      }
     },
 
     ready: function() {
@@ -322,6 +294,18 @@ Example:
         this._setArtifacts(viewArtifacts.filter(searchFilter(searchVal)).filter(categoryFilter(filterType)));
       }
       if (res.album) this._setAlbum(res.album);
+    },
+
+    /**
+     * A function to add an artifact to the current state
+     * @type {Object}
+     */
+    addArtifact: function(val) {
+      // Unshift value to master artifacts list
+      artifacts.unshift(val);
+
+      // Unshift value to displayed artifacts list
+      this.unshift('artifacts', val);
     },
 
   });
