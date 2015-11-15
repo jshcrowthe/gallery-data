@@ -185,7 +185,8 @@ Example:
       album: {
         type: Object,
         readOnly: true,
-        notify: true
+        notify: true,
+        value: function() { return []; }
       },
 
       loadingArtifacts: {
