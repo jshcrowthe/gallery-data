@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../fs-behavior/fs-behavior.html">
 <!--
 An element providing a solution to no problem in particular.
 
@@ -26,17 +27,17 @@ Example:
   <template>
   <iron-ajax auto
      url="https://fs-memories-ami-[[env]].herokuapp.com/artifacts/[[cisId]]"
-     headers='[[_requestHeaders]]'
+     headers='[[_headers]]'
      handle-as="json"
      loading='{{loadingArtifacts}}'
      on-response="_artifactsHandler"></iron-ajax>
   <iron-ajax auto
-     url="[[_albumsUrl(env, cisId)]]"
-     headers='[[_requestHeaders]]'
+     url="[[_base]]/artifactmanager/patrons/[[cisId]]/albums"
+     headers='[[_headers]]'
      handle-as="json"
      on-response="_albumsHandler"></iron-ajax>
   <iron-ajax id='indvAlbum'
-     headers='[[_requestHeaders]]'
+     headers='[[_headers]]'
      handle-as="json"
      loading='{{loadingArtifacts}}'
      on-response="_handleIndvAlbum"></iron-ajax>
@@ -109,17 +110,6 @@ Example:
     }[type] || function() { return true; }
   }
 
-  function readCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-      var c = ca[i];
-      while (c.charAt(0)==' ') c = c.substring(1,c.length);
-      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
-  }
-
   var artifacts = [];
 
   var viewArtifacts = [];
@@ -128,18 +118,11 @@ Example:
 
     is: 'gallery-data',
 
+    behaviors: [
+      FSBehavior
+    ],
+
     properties: {
-      // PRIVATE PROPS
-       
-      _requestHeaders: {
-        type: Object,
-        value: function() {
-          return {
-            'Authorization': readCookie('fssessionid') ? 'Bearer ' + readCookie('fssessionid') : '',
-            'Accept': 'application/json'
-          }
-        }
-      },
       // USER INPUTS
 
       /**
@@ -222,10 +205,6 @@ Example:
       // Refilter Gallery Items
       this.listen(document, 'gallery-filter-changed', '_viewFilteredArtifacts');
       this.listen(document, 'gallery-top-menu-search-changed', '_viewFilteredArtifacts');
-    },
-    _albumsUrl: function(env, cisId) {
-      return (env === 'prod' ? 'https://familysearch.org/artifactmanager/patrons/' + cisId +'/albums' : 
-                          'https://' + env + '.familysearch.org/artifactmanager/patrons/' + cisId + '/albums');
     },
     _artifactsHandler: function(event) {
       if (!event || !event.detail || !event.detail.response) return;

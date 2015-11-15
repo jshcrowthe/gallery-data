@@ -20,7 +20,8 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.0",
     "fs-client": "fs-webcomponents/fs-client#~0.1.9",
-    "iron-ajax": "PolymerElements/iron-ajax#~1.0.8"
+    "iron-ajax": "PolymerElements/iron-ajax#~1.0.8",
+    "fs-behavior": "jshcrowthe/fs-behavior"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
